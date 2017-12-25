@@ -284,20 +284,25 @@ class GraphiteAlert(BaseAlert):
                     self.loading_error, 'Loading error: %s' % e, target='loading', ntype='common')
             self.waiting = False
 
-    def get_graph_url(self, target, graphite_url=None):
+    def get_campaign_url(self, target=None):
+        return "https://studio.aarki.com/dsp/campaign/{}/setup".format(target)
+
+    def get_graph_url(self, query, target=None, graphite_url=None):
         """Get Graphite URL."""
-        return self._graphite_url(target, graphite_url=graphite_url, raw_data=False)
+        if target:
+            target_query = query.replace('.*.cost_usd', '.{}.cost_usd'.format(target))
+        return self._graphite_url(target_query, graphite_url=graphite_url, raw_data=False)
 
     def _graphite_url(self, query, raw_data=False, graphite_url=None):
         """Build Graphite URL."""
         query = escape.url_escape(query)
         graphite_url = graphite_url or self.reactor.options.get('public_graphite_url')
 
-        url = "{base}/render/?target={query}&from=-{from_time}&until=-{until}".format(
+        url = "{base}/render/?target={query}&from=-{from_time}&height=800&width=1200&lineWidth=2&title=Busyness&vtitle=Cost&hideLegend=0".format(
             base=graphite_url, query=query,
-            from_time=self.from_time.as_graphite(),
-            until=self.until.as_graphite(),
+            from_time='2h',
         )
+
         if raw_data:
             url = "{}&format=raw".format(url)
         return url

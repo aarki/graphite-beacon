@@ -8,6 +8,7 @@ TEMPLATES = {
         'html': LOADER.load('graphite/message.html'),
         'text': LOADER.load('graphite/message.txt'),
         'short': LOADER.load('graphite/short.txt'),
+        'subject': LOADER.load('graphite/subject.txt'),
         'telegram': LOADER.load('graphite/short.txt'),
         'slack': LOADER.load('graphite/slack.txt')
     },

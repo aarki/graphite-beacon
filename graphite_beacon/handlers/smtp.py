@@ -37,7 +37,7 @@ class SMTPHandler(AbstractHandler):
         LOGGER.debug("Handler (%s) %s", self.name, level)
 
         msg = self.get_message(level, *args, **kwargs)
-        msg['Subject'] = self.get_short(level, *args, **kwargs)
+        msg['Subject'] = self.get_email_subject(level, *args, **kwargs)
         msg['From'] = self.options['from']
         msg['To'] = ", ".join(self.options['to'])
 
@@ -58,6 +58,11 @@ class SMTPHandler(AbstractHandler):
         finally:
             smtp.quit()
 
+    def get_email_subject(self, level, alert, value, target=None, ntype=None, rule=None):
+        tmpl = TEMPLATES[ntype]['subject']
+        return tmpl.generate(
+            level=level, reactor=self.reactor, alert=alert, value=value, target=target).strip()
+
     def get_message(self, level, alert, value, target=None, ntype=None, rule=None):
         txt_tmpl = TEMPLATES[ntype]['text']
         ctx = dict(
@@ -66,10 +71,10 @@ class SMTPHandler(AbstractHandler):
         msg = MIMEMultipart('alternative')
         plain = MIMEText(str(txt_tmpl.generate(**ctx)), 'plain')
         msg.attach(plain)
-        if self.options['html']:
-            html_tmpl = TEMPLATES[ntype]['html']
-            html = MIMEText(str(html_tmpl.generate(**ctx)), 'html')
-            msg.attach(html)
+        #if self.options['html']:
+        #    html_tmpl = TEMPLATES[ntype]['html']
+        #    html = MIMEText(str(html_tmpl.generate(**ctx)), 'html')
+        #    msg.attach(html)
         return msg
 
 

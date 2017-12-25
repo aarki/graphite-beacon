@@ -136,7 +136,9 @@ class Reactor(object):
     def reinit_handlers(self, level='warning'):
         for name in self.options['%s_handlers' % level]:
             try:
-                self.handlers[level].add(registry.get(self, name))
+                handler = registry.get(self, name)
+                handler.name = name
+                self.handlers[level].add(handler)
             except Exception as e:
                 LOGGER.error('Handler "%s" did not init. Error: %s' % (name, e))
 
