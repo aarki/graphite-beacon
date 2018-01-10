@@ -16,10 +16,12 @@ TEMPLATES = {
         'html': LOADER.load('url/message.html'),
         'text': LOADER.load('url/message.txt'),
         'short': LOADER.load('url/short.txt'),
+        'subject': LOADER.load('graphite/subject.txt'),
     },
     'common': {
         'html': LOADER.load('common/message.html'),
         'text': LOADER.load('common/message.txt'),
         'short': LOADER.load('common/short.txt'),
+        'subject': LOADER.load('graphite/subject.txt'),
     },
 }
