@@ -287,13 +287,15 @@ class GraphiteAlert(BaseAlert):
     def get_campaign_url(self, target=None):
         return "https://studio.aarki.com/dsp/campaign/{}/setup".format(target)
 
-    def get_graph_url(self, query, target=None, graphite_url=None):
+    def get_graph_url(self, query, graphite_url=None, target=None):
         """Get Graphite URL."""
         if target:
             target_query = query.replace('.*.cost_usd', '.{}.cost_usd'.format(target))
-        return self._graphite_url(target_query, graphite_url=graphite_url, raw_data=False)
+            return self._graphite_url_with_target(target_query, graphite_url=graphite_url, raw_data=False)
 
-    def _graphite_url(self, query, raw_data=False, graphite_url=None):
+        return self._graphite_url(query, graphite_url=graphite_url, raw_data=False)
+
+    def _graphite_url_with_target(self, query, raw_data=False, graphite_url=None):
         """Build Graphite URL."""
         query = escape.url_escape(query)
         graphite_url = graphite_url or self.reactor.options.get('public_graphite_url')
@@ -307,6 +309,19 @@ class GraphiteAlert(BaseAlert):
             url = "{}&format=raw".format(url)
         return url
 
+    def _graphite_url(self, query, raw_data=False, graphite_url=None):
+        """Build Graphite URL."""
+        query = escape.url_escape(query)
+        graphite_url = graphite_url or self.reactor.options.get('public_graphite_url')
+
+        url = "{base}/render/?target={query}&from=-{from_time}&until=-{until}".format(
+            base=graphite_url, query=query,
+            from_time=self.from_time.as_graphite(),
+            until=self.until.as_graphite(),
+        )
+        if raw_data:
+            url = "{}&format=raw".format(url)
+        return url
 
 class URLAlert(BaseAlert):
 

@@ -1,11 +1,15 @@
 import datetime as dt
+import os.path as op
+
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from smtplib import SMTP
 
-from tornado import concurrent, gen
+from tornado import concurrent, gen, template
 
-from graphite_beacon.handlers import LOGGER, TEMPLATES, AbstractHandler
+from graphite_beacon.handlers import LOGGER, AbstractHandler
+
+LOADER = template.Loader(op.join(op.dirname(op.abspath(__file__)), '../templates'), autoescape=None)
 
 
 class SMTPHandler(AbstractHandler):
@@ -27,7 +31,8 @@ class SMTPHandler(AbstractHandler):
 
     def init_handler(self):
         """ Check self options. """
-        assert self.options.get('host') and self.options.get('port'), "Invalid options"
+        assert self.options.get('host') and self.options.get('port') and self.options.get('subject_template') \
+               and self.options.get('content_template'), "Invalid options"
         assert self.options.get('to'), 'Recipients list is empty. SMTP disabled.'
         if not isinstance(self.options['to'], (list, tuple)):
             self.options['to'] = [self.options['to']]
@@ -35,7 +40,6 @@ class SMTPHandler(AbstractHandler):
     @gen.coroutine
     def notify(self, level, *args, **kwargs):
         LOGGER.debug("Handler (%s) %s", self.name, level)
-
         msg = self.get_message(level, *args, **kwargs)
         msg['Subject'] = self.get_email_subject(level, *args, **kwargs)
         msg['From'] = self.options['from']
@@ -59,22 +63,22 @@ class SMTPHandler(AbstractHandler):
             smtp.quit()
 
     def get_email_subject(self, level, alert, value, target=None, ntype=None, rule=None):
-        tmpl = TEMPLATES[ntype]['subject']
+        tmpl = LOADER.load(self.options['subject_template'])
         return tmpl.generate(
             level=level, reactor=self.reactor, alert=alert, value=value, target=target).strip()
 
     def get_message(self, level, alert, value, target=None, ntype=None, rule=None):
-        txt_tmpl = TEMPLATES[ntype]['text']
+        txt_tmpl = LOADER.load(self.options['content_template'])
         ctx = dict(
             reactor=self.reactor, alert=alert, value=value, level=level, target=target,
             dt=dt, rule=rule, **self.options)
         msg = MIMEMultipart('alternative')
         plain = MIMEText(str(txt_tmpl.generate(**ctx)), 'plain')
         msg.attach(plain)
-        #if self.options['html']:
-        #    html_tmpl = TEMPLATES[ntype]['html']
-        #    html = MIMEText(str(html_tmpl.generate(**ctx)), 'html')
-        #    msg.attach(html)
+        if self.options.get('html_template', None):
+            html_tmpl = LOADER.load(self.options['html_template'])
+            html = MIMEText(str(html_tmpl.generate(**ctx)), 'html')
+            msg.attach(html)
         return msg
 
 

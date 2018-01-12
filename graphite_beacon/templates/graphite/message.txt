@@ -1,13 +1,26 @@
 {{ reactor.options.get('prefix') }} {{ level.upper() }}
 {{ '=' * len(reactor.options.get('prefix') + level)}}
 
+Alert: {{ alert.name }}
+Status: {{ level }}
 
-Campaign spend increased
-ID: {{ target }} 
-Spend last hour: {{ alert.convert(value) }} ({{value}})
+Time: {{ dt.datetime.now().strftime('%H:%M %d/%m/%Y') }}
+Value: {{ alert.convert(value) }} ({{value}})
+Method: {{ alert.method }}
+{% if rule %}
+Rule: {{ rule['raw'] }}{% end %}
+{% if target %}
+Target: {{ target }}
+{% if alert.history[target] %}
+History: {{ [ alert.convert(v) for v in alert.history[target][:100] ] }} {% end %}
+{% end %}
+{% if target and rule %}{% for expr in filter(lambda x: isinstance(x, dict), rule['exprs']) %}
+<b>Tested value:</b> {{ alert.convert(alert.get_value_for_expr(expr, target)) }}</b> <br/>
+{% end %}{% end %}
 
-View the graph: {{ alert.get_graph_url(alert.query, target) }}
-View the campaign: {{ alert.get_campaign_url(target) }}
+View the graph: {{ alert.get_graph_url(alert.query) }}
 
 --
-You are receiving this email because campaign {{ target }} spend increased above reporting threshold compared with previous reporting period (1 hour)
+
+You can configure alerts for notifications in your configuration file.
+See https://github.com/klen/graphite-beacon
