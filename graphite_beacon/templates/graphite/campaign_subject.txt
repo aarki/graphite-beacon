@@ -1,5 +1,5 @@
 {% if level == 'normal' %}
-Alert {{ alert.name }} {% if target %}{{target}}{% end %} is back to normal.
+Alert - {{ alert.name }} {% if target %}{{target}}{% end %} is back to normal.
 {% else %}
-Alert {{ alert.name }} {% if target %}{{target}}{% end %}
+Alert - {{ alert.name }} {% if target %}{{target}}{% end %}
 {% end %}

@@ -177,7 +177,8 @@ class BaseAlert(_.with_metaclass(AlertFabric)):
                     self.notify(rule['level'], value, target, rule=rule)
                     break
             else:
-                self.notify('normal', value, target, rule=rule)
+                if rule['level'] == 'critical':
+                    self.notify('normal', value, target, rule=rule)
 
             self.history[target].append(value)
 
