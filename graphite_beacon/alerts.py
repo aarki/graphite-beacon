@@ -77,6 +77,8 @@ class BaseAlert(_.with_metaclass(AlertFabric)):
         self.state = {None: "normal", "waiting": "normal", "loading": "normal"}
         self.history = defaultdict(lambda: sliceable_deque([], self.history_size))
 
+        self.last_notified_was_critical = False
+
         LOGGER.info("Alert '%s': has inited", self)
 
     def __hash__(self):
@@ -177,7 +179,7 @@ class BaseAlert(_.with_metaclass(AlertFabric)):
                     self.notify(rule['level'], value, target, rule=rule)
                     break
             else:
-                if rule['level'] == 'critical':
+                if self.last_notified_was_critical:
                     self.notify('normal', value, target, rule=rule)
 
             self.history[target].append(value)
@@ -214,6 +216,7 @@ class BaseAlert(_.with_metaclass(AlertFabric)):
         return rvalue
 
     def notify(self, level, value, target=None, ntype=None, rule=None):
+        self.last_notified_was_critical = (level == 'critical')
         """Notify main reactor about event."""
         # Did we see the event before?
         if target in self.state and level == self.state[target]:
@@ -279,7 +282,7 @@ class GraphiteAlert(BaseAlert):
                 if len(data) == 0:
                     raise ValueError('No data')
                 self.check(data)
-                self.notify('normal', 'Metrics are loaded', target='loading', ntype='common')
+                #self.notify('normal', 'Metrics are loaded', target='loading', ntype='common')
             except Exception as e:
                 self.notify(
                     self.loading_error, 'Loading error: %s' % e, target='loading', ntype='common')
