@@ -288,8 +288,20 @@ class GraphiteAlert(BaseAlert):
                     self.loading_error, 'Loading error: %s' % e, target='loading', ntype='common')
             self.waiting = False
 
-    def get_campaign_url(self, target=None):
-        return "https://studio.aarki.com/dsp/campaign/{}/setup".format(target)
+    def get_campaign_url(self, campaign=None):
+        return "https://studio.aarki.com/dsp/campaign/{}/setup".format(campaign)
+
+    def get_dashboard_url(self, campaign):
+        campaign_str = "rtb.campaign."
+        start = self.query.find(campaign_str)
+        if start == -1:
+            return ""
+
+        tmp = self.query[start+len(campaign_str):]
+        end = tmp.find(".")
+        exchange = tmp[:end]
+        return "https://admin.aarki.com/rtb/dashboard/by_campaign?exchange={e}&campaign={c}".format(e=exchange,
+                                                                                                    c=campaign)
 
     def get_graph_url(self, query, graphite_url=None, target=None):
         """Get Graphite URL."""
