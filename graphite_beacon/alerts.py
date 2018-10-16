@@ -218,7 +218,7 @@ class BaseAlert(_.with_metaclass(AlertFabric)):
     def notify(self, level, value, target=None, ntype=None, rule=None):
         if target and level == 'critical':
             self.last_critical_notified.add(target)
-        else:
+        elif target in self.last_critical_notified:
             self.last_critical_notified.remove(target)
 
         """Notify main reactor about event."""
