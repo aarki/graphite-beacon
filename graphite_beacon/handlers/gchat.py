@@ -21,9 +21,8 @@ class GChatHandler(AbstractHandler):
         assert self.webhook, 'GChat webhook is not defined.'
         self.client = hc.AsyncHTTPClient()
 
-    def get_message(self, level, alert, value, target=None, ntype=None):  # pylint: disable=unused-argument
-        msg_type = 'gchat' if ntype == 'graphite' else 'short'
-        tmpl = TEMPLATES[ntype][msg_type]
+    def get_short(self, level, alert, value, target=None, ntype=None, rule=None):  # pylint: disable=unused-argument
+        tmpl = TEMPLATES[ntype]['gchat']
         return tmpl.generate(
             level=level, reactor=self.reactor, alert=alert, value=value, target=target).strip()
 
@@ -32,12 +31,28 @@ class GChatHandler(AbstractHandler):
         LOGGER.debug("Handler (%s) %s", self.name, level)
 
         message = self.get_short(level, *args, **kwargs).decode('UTF-8')
-        data = {'text': message}
+        data = {
+            "cards": [
+                {
+                    "sections": [
+                        {
+                            "widgets": [
+                                {
+                                    "textParagraph": {
+                                        "text": message
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
 
         body = json.dumps(data)
         yield self.client.fetch(
             self.webhook,
             method='POST',
-            headers={'Content-Type': 'application/json'},
+            headers={'Content-Type': 'application/json; charset=UTF-8'},
             body=body
         )
