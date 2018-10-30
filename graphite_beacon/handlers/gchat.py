@@ -16,6 +16,13 @@ class GChatHandler(AbstractHandler):
         'webhook': None,
     }
 
+    colors = {
+        'red': '#A12830',
+        'green': '#3F704D',
+        'blue': '#3E67CE',
+        'yellow': '#FFAC00',
+    }
+
     def init_handler(self):
         self.webhook = self.options.get('webhook')
         assert self.webhook, 'GChat webhook is not defined.'
@@ -24,7 +31,7 @@ class GChatHandler(AbstractHandler):
     def get_short(self, level, alert, value, target=None, ntype=None, rule=None):  # pylint: disable=unused-argument
         tmpl = TEMPLATES[ntype]['gchat']
         return tmpl.generate(
-            level=level, reactor=self.reactor, alert=alert, value=value, target=target).strip()
+            level=level, reactor=self.reactor, alert=alert, value=value, target=target, colors=self.colors).strip()
 
     @gen.coroutine
     def notify(self, level, *args, **kwargs):
