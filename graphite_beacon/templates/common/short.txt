@@ -3,4 +3,3 @@
 {% else %}
 {{ reactor.options.get('prefix') }} {{ level.upper() }} <{{ alert.name }}> {{ value }}
 {% end %}
-

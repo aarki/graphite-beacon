@@ -1,11 +1,5 @@
 {% if level == 'normal' %}
-<b><font color="{{ colors.get('green') }}">{{ reactor.options.get('prefix') }} RECOVERY</font>
-&lt;{{ alert.name }}&gt;</b> is back to normal.
-{% elif level == 'warning' %}
-<b><font color="{{ colors.get('yellow') }}">{{ reactor.options.get('prefix') }} {{ level.upper() }}</font>
-&lt;{{ alert.name }}&gt; <font color="{{ colors.get('blue') }}">{{ value }}</font></b>
+{{ reactor.options.get('prefix') }} RECOVERY *<{{ alert.name }}>* is back to `normal.`
 {% else %}
-<b><font color="{{ colors.get('red') }}">{{ reactor.options.get('prefix') }} {{ level.upper() }}</font>
-&lt;{{ alert.name }}&gt; <font color="{{ colors.get('blue') }}">{{ value }}</font></b>
+{{ reactor.options.get('prefix') }} {{ level.upper() }} *<{{ alert.name }}>* `{{ value }}`
 {% end %}
-
